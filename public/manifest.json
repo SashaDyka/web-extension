@@ -12,6 +12,20 @@
     "default_path": "index.html"
   },
 
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "commands": {
+    "open_side_panel": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Open the side panel"
+    }
+  },
+
   "permissions": ["sidePanel"],
   "host_permissions": ["<all_urls>"]
 }
