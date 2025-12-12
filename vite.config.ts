@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         popup: './index.html',
         background: './src/background/index.ts',
+        content: 'src/content/content.ts',
       },
       output: {
         entryFileNames: '[name].js',
@@ -19,4 +20,3 @@ export default defineConfig({
     },
   },
 })
-// content: 'src/content/content.ts',
