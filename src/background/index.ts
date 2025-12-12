@@ -10,3 +10,17 @@ chrome.commands.onCommand.addListener((command) => {
     })
   }
 })
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'TOGGLE_COLOR') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tabId = tabs[0]?.id
+      if (!tabId) return
+
+      chrome.tabs.sendMessage(tabId, {
+        type: 'APPLY_COLOR',
+        enabled: message.enabled,
+      })
+    })
+  }
+})

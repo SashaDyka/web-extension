@@ -16,10 +16,12 @@
     "service_worker": "background.js"
   },
 
-  "content": {
-    "matches": ["<all_urls>"],
-    "js": ["content.js"]
-  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
 
   "commands": {
     "open_side_panel": {
@@ -31,6 +33,6 @@
     }
   },
 
-  "permissions": ["sidePanel"],
+  "permissions": ["sidePanel", "tabs", "commands"],
   "host_permissions": ["<all_urls>"]
 }
