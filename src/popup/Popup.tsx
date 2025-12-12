@@ -7,10 +7,14 @@ export default function Popup() {
     const newValue = !enabled
     setEnabled(newValue)
 
-    chrome.runtime.sendMessage({
-      type: 'TOGGLE_COLOR',
-      enabled: newValue,
-    })
+    try {
+      chrome.runtime.sendMessage({
+        type: 'TOGGLE_COLOR',
+        enabled: newValue,
+      })
+    } catch (err) {
+      console.error('popup: unexpected send error', err)
+    }
   }
 
   return (

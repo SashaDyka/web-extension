@@ -33,6 +33,6 @@
     }
   },
 
-  "permissions": ["sidePanel", "tabs", "commands"],
+  "permissions": ["sidePanel", "tabs", "commands", "activeTab"],
   "host_permissions": ["<all_urls>"]
 }
