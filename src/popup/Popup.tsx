@@ -1,95 +1,68 @@
 import { useEffect, useState } from 'react'
 
-type Theme = 'dark' | 'light' | 'pink'
+type TimeMap = Record<string, number>
 
-type Setting = {
-  enabled: boolean
-  theme: Theme
+function format(ms: number) {
+  const min = Math.floor(ms / 60000)
+  return `${min} min`
 }
 
 export default function Popup() {
-  const [hostname, setHostname] = useState<string | null>(null)
-  const [setting, setSetting] = useState<Setting>({
-    enabled: false,
-    theme: 'light',
-  })
-  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<TimeMap>({})
 
   useEffect(() => {
-    chrome.runtime.sendMessage(
-      { type: 'GET_SETTINGS_FOR_ACTIVE_TAB' },
-      (resp) => {
-        if (resp) {
-          setHostname(resp.hostname || null)
-          setSetting(resp.setting || { enabled: false, theme: 'light' })
-        }
-        setLoading(false)
-      }
-    )
+    chrome.storage.local.get(null, (res) => {
+      setData(res as TimeMap)
+    })
   }, [])
 
-  const saveSettings = (newSetting: Setting) => {
-    if (!hostname) return
-    chrome.runtime.sendMessage(
-      {
-        type: 'SET_DOMAIN_SETTINGS',
-        payload: { hostname, settings: newSetting },
-      },
-      (resp) => {
-        if (!resp || !resp.success)
-          console.error('popup: failed to save settings', resp)
+  const toggleReaderMode = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_READER_MODE' })
       }
-    )
+    })
   }
 
-  const toggleEnabled = () => {
-    const next = { ...setting, enabled: !setting.enabled }
-    setSetting(next)
-    saveSettings(next)
-  }
-
-  const changeTheme = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const next = {
-      enabled: true,
-      theme: e.target.value as Theme,
-    }
-    setSetting(next)
-    saveSettings(next)
-  }
-
-  const onReset = () => {
-    chrome.runtime.sendMessage({ type: 'RESET_PAGE' }, () => {})
-  }
-
-  if (loading) return <div className="p-4">Loading…</div>
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="p-4 w-64">
-      <div className="mb-2">
-        <strong>Domain:</strong> <span>{hostname || 'unknown'}</span>
-      </div>
+    <div
+      style={{
+        minWidth: 260,
+        padding: 12,
+        fontFamily: 'sans-serif',
+      }}
+    >
+      <h3>Time control</h3>
 
-      <label className="flex items-center gap-2 mb-3">
-        <input
-          type="checkbox"
-          checked={setting.enabled}
-          onChange={toggleEnabled}
-        />
-        <span>Enabled for this site</span>
-      </label>
-
-      <div className="mb-3">
-        <label className="block mb-1">Theme</label>
-        <select value={setting.theme} onChange={changeTheme} className="w-full">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-          <option value="pink">Pink</option>
-        </select>
-      </div>
-
-      <button onClick={onReset} className="px-3 py-1 border rounded">
-        Reset Page
+      <button
+        onClick={toggleReaderMode}
+        style={{
+          width: '100%',
+          marginBottom: 10,
+          padding: 6,
+          cursor: 'pointer',
+        }}
+      >
+        📖 Reading mode
       </button>
+
+      {entries.length === 0 && <p>No data available</p>}
+
+      {entries.map(([domain, time]) => (
+        <div
+          key={domain}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 6,
+          }}
+        >
+          <span>{domain}</span>
+          <strong>{format(time)}</strong>
+        </div>
+      ))}
     </div>
   )
 }
